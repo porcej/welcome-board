@@ -75,6 +75,7 @@ def new_item(schedule_id: int):
     if form.validate_on_submit():
         item = ScheduleItem(
             schedule_id=schedule_id,
+            name=form.name.data or None,
             start_time=form.start_time.data,
             duration_minutes=form.duration_minutes.data,
             location=form.location.data or None,

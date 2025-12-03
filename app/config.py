@@ -10,7 +10,7 @@ class BaseConfig:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
     UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", str(BASE_DIR / "app" / "static" / "uploads"))
-    MAX_CONTENT_LENGTH = 2 * 1024 * 1024
+    MAX_CONTENT_LENGTH = 10 * 1024 * 1024  # 10MB limit for file uploads
     TIMEZONE = os.getenv("TIMEZONE", "UTC")
     WEATHER_TTL_MINUTES = int(os.getenv("WEATHER_TTL_MINUTES", "60"))
 
