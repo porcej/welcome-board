@@ -136,8 +136,8 @@ if [ -L /etc/nginx/sites-enabled/default ]; then
     rm /etc/nginx/sites-enabled/default
 fi
 
-# Test nginx configuration
-print_info "Testing nginx configuration..."
+# Test nginx configuration (initial test with HTTP only)
+print_info "Testing nginx configuration (HTTP only, SSL will be added by certbot)..."
 NGINX_TEST_OUTPUT=$(nginx -t 2>&1)
 NGINX_TEST_EXIT=$?
 
@@ -169,15 +169,35 @@ print_info "Obtaining SSL certificate from Let's Encrypt..."
 print_warn "Make sure your domain $DOMAIN_NAME points to this server's IP address"
 read -p "Press Enter to continue with certificate generation..."
 
-# Run certbot
+# Run certbot - it will automatically uncomment and configure the HTTPS server block
+print_info "Certbot will automatically configure the HTTPS server block..."
 if certbot --nginx -d "$DOMAIN_NAME" --non-interactive --agree-tos --email "$EMAIL" --redirect; then
     print_info "SSL certificate obtained successfully!"
+    print_info "Certbot has automatically updated the nginx configuration with SSL settings"
+    
+    # Test nginx configuration again after certbot changes
+    print_info "Testing nginx configuration after certbot changes..."
+    if nginx -t; then
+        print_info "Nginx configuration is valid after certbot changes"
+    else
+        print_warn "Nginx test failed after certbot changes, but this may be due to warnings"
+        print_warn "Checking if there are actual errors..."
+        NGINX_TEST_OUTPUT=$(nginx -t 2>&1)
+        if echo "$NGINX_TEST_OUTPUT" | grep -q "\\[emerg\\]"; then
+            print_error "Nginx configuration has ERRORS:"
+            echo "$NGINX_TEST_OUTPUT" | grep "\\[emerg\\]"
+            print_error "Please review the configuration"
+        else
+            print_info "Only warnings detected, configuration should work"
+        fi
+    fi
 else
     print_error "Failed to obtain SSL certificate"
     print_warn "You may need to:"
     print_warn "1. Ensure DNS is pointing to this server"
     print_warn "2. Ensure port 80 is open and accessible"
-    print_warn "3. Run certbot manually: certbot --nginx -d $DOMAIN_NAME"
+    print_warn "3. Fix any nginx configuration errors first"
+    print_warn "4. Run certbot manually: certbot --nginx -d $DOMAIN_NAME"
     exit 1
 fi
 
