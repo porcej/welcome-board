@@ -57,6 +57,51 @@ def edit_schedule(schedule_id: int):
     return render_template("schedules/schedule_form.html", form=form, title="Edit Schedule", schedule=sched, items=items)
 
 
+@schedules_bp.route("/<int:schedule_id>/duplicate", methods=["POST"])
+@login_required
+def duplicate_schedule(schedule_id: int):
+    original = Schedule.query.get_or_404(schedule_id)
+    
+    # Create new schedule with " (Copy)" suffix
+    new_name = f"{original.name} (Copy)"
+    # If the copy name already exists, append a number
+    counter = 1
+    while Schedule.query.filter_by(name=new_name).first():
+        counter += 1
+        new_name = f"{original.name} (Copy {counter})"
+    
+    new_schedule = Schedule(
+        name=new_name,
+        date=original.date,
+        is_active=False,  # Duplicated schedule should not be active by default
+        show_name=original.show_name,
+        created_by=current_user.id
+    )
+    db.session.add(new_schedule)
+    db.session.flush()  # Get the new schedule ID
+    
+    # Copy all schedule items
+    original_items = ScheduleItem.query.filter_by(schedule_id=schedule_id).order_by(ScheduleItem.start_time).all()
+    for item in original_items:
+        new_item = ScheduleItem(
+            schedule_id=new_schedule.id,
+            name=item.name,
+            start_time=item.start_time,
+            duration_minutes=item.duration_minutes,
+            end_time=item.end_time,
+            location=item.location,
+            uniform=item.uniform,
+            lead=item.lead,
+            notes=item.notes,
+            icon=item.icon
+        )
+        db.session.add(new_item)
+    
+    db.session.commit()
+    flash(f"Schedule duplicated as '{new_schedule.name}'", "success")
+    return redirect(url_for("schedules.edit_schedule", schedule_id=new_schedule.id))
+
+
 @schedules_bp.route("/<int:schedule_id>/delete", methods=["POST"])
 @login_required
 def delete_schedule(schedule_id: int):

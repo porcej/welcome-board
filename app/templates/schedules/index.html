@@ -21,7 +21,11 @@
           </div>
           {% if s.is_active %}<div class="badge bg-primary mt-2">Active</div>{% endif %}
         </a>
-        <div class="ms-3">
+        <div class="ms-3 d-flex gap-2">
+          <form method="post" action="{{ url_for('schedules.duplicate_schedule', schedule_id=s.id) }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-sm btn-secondary" title="Duplicate Schedule">📋 Duplicate</button>
+          </form>
           <a href="{{ url_for('schedules.export_schedule', schedule_id=s.id) }}" class="btn btn-sm btn-info" title="Export to Excel">
             📥 Export
           </a>
