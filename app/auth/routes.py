@@ -13,7 +13,7 @@ def login():
         user = User.query.filter_by(email=form.email.data.lower().strip()).first()
         if user and user.check_password(form.password.data):
             login_user(user, remember=True)
-            return redirect(request.args.get("next") or url_for("schedules.list_schedules"))
+            return redirect(request.args.get("next") or url_for("index"))
         flash("Invalid credentials", "danger")
     return render_template("auth/login.html", form=form)
 

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div class="container">
+  {% if current_user.is_authenticated %}
+    <div class="row mb-4">
+      <div class="col">
+        <h1 class="mb-4">Welcome to Digital Signage</h1>
+        <p class="lead text-secondary">Manage your schedules, icons, and display settings.</p>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-4">
+        <div class="card bg-dark text-light border-secondary h-100">
+          <div class="card-body">
+            <h5 class="card-title">
+              <i class="bi bi-calendar-event me-2"></i>
+              Schedules
+            </h5>
+            <p class="card-text text-secondary">Create and manage your schedules and schedule items.</p>
+            <a href="{{ url_for('schedules.list_schedules') }}" class="btn btn-primary">Manage Schedules</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="card bg-dark text-light border-secondary h-100">
+          <div class="card-body">
+            <h5 class="card-title">
+              <i class="bi bi-image me-2"></i>
+              Icons
+            </h5>
+            <p class="card-text text-secondary">Upload custom icons or create character-based icons for your schedule items.</p>
+            <a href="{{ url_for('icons.list_icons') }}" class="btn btn-primary">Manage Icons</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="card bg-dark text-light border-secondary h-100">
+          <div class="card-body">
+            <h5 class="card-title">
+              <i class="bi bi-gear me-2"></i>
+              Settings
+            </h5>
+            <p class="card-text text-secondary">Configure logo, colors, background, weather location, and display options.</p>
+            <a href="{{ url_for('schedules.settings') }}" class="btn btn-primary">Configure Settings</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="card bg-dark text-light border-secondary h-100">
+          <div class="card-body">
+            <h5 class="card-title">
+              <i class="bi bi-display me-2"></i>
+              Display
+            </h5>
+            <p class="card-text text-secondary">View the public display page that shows your active schedule.</p>
+            <a href="{{ url_for('display.sign') }}" class="btn btn-success" target="_blank">View Display</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col">
+        <div class="card bg-dark text-light border-secondary">
+          <div class="card-body">
+            <h5 class="card-title">
+              <i class="bi bi-info-circle me-2"></i>
+              Quick Actions
+            </h5>
+            <div class="d-flex flex-wrap gap-2 mt-3">
+              <a href="{{ url_for('schedules.new_schedule') }}" class="btn btn-outline-success btn-sm">
+                <i class="bi bi-plus-circle me-1"></i>New Schedule
+              </a>
+              <a href="{{ url_for('schedules.import_schedule') }}" class="btn btn-outline-info btn-sm">
+                <i class="bi bi-upload me-1"></i>Import Schedule
+              </a>
+              <a href="{{ url_for('icons.new_icon') }}" class="btn btn-outline-info btn-sm">
+                <i class="bi bi-plus-circle me-1"></i>New Icon
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card bg-dark text-light border-secondary">
+          <div class="card-body text-center">
+            <h2 class="card-title mb-4">Digital Signage App</h2>
+            <p class="card-text text-secondary mb-4">
+              Please log in to manage your schedules and display settings.
+            </p>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">Login</a>
+            <div class="mt-4">
+              <a href="{{ url_for('display.sign') }}" class="btn btn-outline-light">View Display</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+

@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, redirect, url_for
+from flask import Flask, request, redirect, url_for, render_template
 from flask_login import current_user
 from .extensions import db, migrate, login_manager, csrf
 from .config import get_config
@@ -84,7 +84,7 @@ def create_app() -> Flask:
 
     @app.route("/")
     def index():
-        return "Digital Signage App is running. Visit /display to view the sign."
+        return render_template("index.html")
 
     return app
 
