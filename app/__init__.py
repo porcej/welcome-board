@@ -11,11 +11,13 @@ def register_blueprints(app: Flask) -> None:
     from .schedules.routes import schedules_bp
     from .display.routes import display_bp
     from .icons.routes import icons_bp
+    from .users.routes import users_bp
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(schedules_bp, url_prefix="/schedules")
     app.register_blueprint(display_bp, url_prefix="/display")
     app.register_blueprint(icons_bp, url_prefix="/icons")
+    app.register_blueprint(users_bp, url_prefix="/users")
 
 
 def create_app() -> Flask:
