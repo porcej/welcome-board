@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Schedules{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+  <h2>Schedules</h2>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('schedules.new_schedule') }}" class="btn btn-success btn-sm">New</a>
+    <a href="{{ url_for('schedules.import_schedule') }}" class="btn btn-info btn-sm">Import</a>
+    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light btn-sm">Logout</a>
+  </div>
+</div>
+<hr>
+<div class="list-group">
+  {% for s in schedules %}
+    <div class="list-group-item bg-dark text-light border-secondary">
+      <div class="d-flex justify-content-between align-items-center">
+        <a href="{{ url_for('schedules.edit_schedule', schedule_id=s.id) }}" class="text-light text-decoration-none flex-grow-1">
+          <div class="d-flex justify-content-between">
+            <span class="fw-semibold">{{ s.name }}</span>
+            <span class="text-secondary">{{ s.date.strftime('%Y-%m-%d') }}</span>
+          </div>
+          {% if s.is_active %}<div class="badge bg-primary mt-2">Active</div>{% endif %}
+        </a>
+        <div class="ms-3">
+          <a href="{{ url_for('schedules.export_schedule', schedule_id=s.id) }}" class="btn btn-sm btn-info" title="Export to Excel">
+            📥 Export
+          </a>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="text-secondary">No schedules yet.</div>
+  {% endfor %}
+{% endblock %}
+
+

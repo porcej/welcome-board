@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+  <h2>Settings</h2>
+  <div>
+    <a href="{{ url_for('schedules.list_schedules') }}" class="btn btn-secondary btn-sm">Back</a>
+  </div>
+</div>
+<hr>
+<form method="post" enctype="multipart/form-data">
+  {{ form.hidden_tag() }}
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label">{{ form.logo.label }}</label>
+      {{ form.logo(class="form-control") }}
+      {% if settings.logo_path %}
+        <div class="mt-2">
+          <img src="{{ url_for('static', filename=settings.logo_path) }}" alt="logo" style="max-height: 100px;">
+        </div>
+      {% endif %}
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">{{ form.logo_size.label }}</label>
+      {{ form.logo_size(class="form-control", value=settings.logo_size if settings and settings.logo_size else 120) }}
+      <small class="form-text text-muted">Maximum height in pixels (50-500)</small>
+    </div>
+    <div class="col-md-12">
+      <label class="form-label">{{ form.background_image.label }}</label>
+      {{ form.background_image(class="form-control") }}
+      {% if settings.background_image_path %}
+        <div class="mt-2">
+          <img src="{{ url_for('static', filename=settings.background_image_path) }}" alt="background" style="max-height: 150px; max-width: 100%; object-fit: contain;">
+          <div class="mt-1">
+            <small class="text-muted">Current background image</small>
+          </div>
+        </div>
+      {% endif %}
+      <small class="form-text text-muted">Upload an image to use as the display background</small>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">{{ form.background_image_size.label }}</label>
+      {{ form.background_image_size(class="form-select") }}
+      <small class="form-text text-muted">How the background image should be displayed</small>
+    </div>
+    <div class="col-md-12">
+      <label class="form-label">{{ form.notes_left_col.label }}</label>
+      {{ form.notes_left_col(class="form-control", rows="4") }}
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">{{ form.latitude.label }}</label>
+      {{ form.latitude(class="form-control") }}
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">{{ form.longitude.label }}</label>
+      {{ form.longitude(class="form-control") }}
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">{{ form.timezone.label }}</label>
+      {{ form.timezone(class="form-control") }}
+    </div>
+    <div class="col-12">
+      <h5 class="mt-4 mb-3">Display Colors</h5>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">{{ form.bg_color.label }}</label>
+      {{ form.bg_color(class="form-control form-control-color", value=settings.bg_color if settings and settings.bg_color else "#000000") }}
+      <small class="form-text text-muted">Main background color</small>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">{{ form.text_color.label }}</label>
+      {{ form.text_color(class="form-control form-control-color", value=settings.text_color if settings and settings.text_color else "#ffffff") }}
+      <small class="form-text text-muted">Primary text color</small>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">{{ form.box_color.label }}</label>
+      {{ form.box_color(class="form-control form-control-color", value=settings.box_color if settings and settings.box_color else "#212529") }}
+      <small class="form-text text-muted">Color for left side panel</small>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">{{ form.box_opacity.label }}</label>
+      {{ form.box_opacity(class="form-control", type="number", step="0.1", min="0", max="1", value=settings.box_opacity if settings and settings.box_opacity is not none else 1.0) }}
+      <small class="form-text text-muted">Opacity (0.0-1.0)</small>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">{{ form.schedule_color.label }}</label>
+      {{ form.schedule_color(class="form-control form-control-color", value=settings.schedule_color if settings and settings.schedule_color else "#212529") }}
+      <small class="form-text text-muted">Color for schedule box</small>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">{{ form.schedule_opacity.label }}</label>
+      {{ form.schedule_opacity(class="form-control", type="number", step="0.1", min="0", max="1", value=settings.schedule_opacity if settings and settings.schedule_opacity is not none else 1.0) }}
+      <small class="form-text text-muted">Opacity (0.0-1.0)</small>
+    </div>
+  </div>
+  <div class="mt-3">
+    {{ form.submit(class="btn btn-primary") }}
+  </div>
+</form>
+{% endblock %}
+
+

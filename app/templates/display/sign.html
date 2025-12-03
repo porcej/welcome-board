@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+{% block title %}Display{% endblock %}
+{% block head %}
+<style>
+  {% set box_color = settings.box_color if settings and settings.box_color else '#212529' %}
+  {% set box_opacity = settings.box_opacity if settings and settings.box_opacity is not none else 1.0 %}
+  {% set schedule_color = settings.schedule_color if settings and settings.schedule_color else '#212529' %}
+  {% set schedule_opacity = settings.schedule_opacity if settings and settings.schedule_opacity is not none else 1.0 %}
+  {% set box_rgb = box_color|hex_to_rgb %}
+  {% set schedule_rgb = schedule_color|hex_to_rgb %}
+  :root {
+    --display-bg: {{ settings.bg_color if settings and settings.bg_color else '#000000' }};
+    --display-text: {{ settings.text_color if settings and settings.text_color else '#ffffff' }};
+    --display-box: rgba({{ box_rgb[0] }}, {{ box_rgb[1] }}, {{ box_rgb[2] }}, {{ box_opacity }});
+    --display-schedule: rgba({{ schedule_rgb[0] }}, {{ schedule_rgb[1] }}, {{ schedule_rgb[2] }}, {{ schedule_opacity }});
+  }
+  {% set bg_size = settings.background_image_size if settings and settings.background_image_size else 'center' %}
+  {% if bg_size == 'tile' %}
+    {% set bg_size_css = 'auto' %}
+    {% set bg_repeat_css = 'repeat' %}
+    {% set bg_position_css = 'top left' %}
+  {% elif bg_size == 'stretch' %}
+    {% set bg_size_css = '100% 100%' %}
+    {% set bg_repeat_css = 'no-repeat' %}
+    {% set bg_position_css = 'center' %}
+  {% elif bg_size == 'fit' %}
+    {% set bg_size_css = 'contain' %}
+    {% set bg_repeat_css = 'no-repeat' %}
+    {% set bg_position_css = 'center' %}
+  {% else %}
+    {% set bg_size_css = 'cover' %}
+    {% set bg_repeat_css = 'no-repeat' %}
+    {% set bg_position_css = 'center' %}
+  {% endif %}
+  /* Override body background for display page */
+  body {
+    {% if settings and settings.background_image_path %}
+    background-image: url("{{ url_for('static', filename=settings.background_image_path) }}") !important;
+    background-size: {{ bg_size_css }} !important;
+    background-position: {{ bg_position_css }} !important;
+    background-repeat: {{ bg_repeat_css }} !important;
+    background-attachment: fixed !important;
+    {% endif %}
+    background-color: var(--display-bg) !important;
+    color: var(--display-text) !important;
+  }
+  /* Hide navbar on display page */
+  nav.navbar {
+    display: none !important;
+  }
+  /* Override main container background */
+  main.container-fluid {
+    {% if settings and settings.background_image_path %}
+    background-image: url("{{ url_for('static', filename=settings.background_image_path) }}") !important;
+    background-size: {{ bg_size_css }} !important;
+    background-position: {{ bg_position_css }} !important;
+    background-repeat: {{ bg_repeat_css }} !important;
+    background-attachment: fixed !important;
+    {% endif %}
+    background-color: var(--display-bg) !important;
+    padding: 0 !important;
+  }
+  .clock-time { font-size: 4rem; font-weight: 700; line-height: 1; color: var(--display-text); }
+  .clock-date { font-size: 1.1rem; color: var(--display-text); opacity: 0.7; }
+  .left-col { 
+    min-width: 320px; 
+    background-color: var(--display-box) !important; 
+    color: var(--display-text); 
+  }
+  .left-col img.logo-box { 
+    max-width: 100%; 
+    max-height: {{ settings.logo_size if settings and settings.logo_size else 120 }}px; 
+    object-fit: contain; 
+    width: auto; 
+    height: auto; 
+  }
+  .display-box { 
+    background-color: var(--display-schedule); 
+    color: var(--display-text); 
+    border-color: rgba(255, 255, 255, 0.2); 
+  }
+  .display-box .text-secondary { color: var(--display-text) !important; opacity: 0.7; }
+  .display-page { 
+    {% if settings and settings.background_image_path %}
+    background-image: url("{{ url_for('static', filename=settings.background_image_path) }}") !important;
+    background-size: {{ bg_size_css }} !important;
+    background-position: {{ bg_position_css }} !important;
+    background-repeat: {{ bg_repeat_css }} !important;
+    background-attachment: fixed !important;
+    {% endif %}
+    background-color: var(--display-bg) !important; 
+    min-height: 100vh; 
+  }
+  /* Center schedule vertically */
+  .display-page .row {
+    /* min-height: 100vh; */
+    align-items: flex-start;
+  }
+  .display-page .left-col {
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .display-page .col-lg-9 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .display-page .col-lg-9 > .display-box {
+    width: 100%;
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container-fluid display-page">
+  <div class="row">
+    <div class="col-12 col-lg-3 left-col p-4">
+      <div class="text-center mb-4">
+        {% if settings and settings.logo_path %}
+          <img src="{{ url_for('static', filename=settings.logo_path) }}" alt="logo" class="logo-box">
+        {% else %}
+          <span style="color: var(--display-text); opacity: 0.7;">Logo</span>
+        {% endif %}
+      </div>
+      <div class="mb-4">
+        <div id="clock-time" class="clock-time">--:--</div>
+        <div id="clock-date" class="clock-date">Loading date…</div>
+      </div>
+      <div class="mb-4">
+        <div class="row text-center">
+          {% for key in ['morning','noon','afternoon'] %}
+            {% set w = weather.get(key) if weather else None %}
+            <div class="col">
+              {% if w and w.icon %}
+                {% set icon_map = {
+                  'sun': 'bi-sun-fill',
+                  'cloud': 'bi-cloud',
+                  'clouds': 'bi-clouds-fill',
+                  'cloud-fog': 'bi-cloud-fog-fill',
+                  'cloud-drizzle': 'bi-cloud-drizzle-fill',
+                  'cloud-rain': 'bi-cloud-rain-fill',
+                  'cloud-snow': 'bi-snow',
+                  'cloud-lightning': 'bi-lightning-fill'
+                } %}
+                <div class="mb-2">
+                  <i class="bi {{ icon_map.get(w.icon, 'bi-cloud') }}" style="font-size: 2rem;"></i>
+                </div>
+              {% endif %}
+              <div class="fw-semibold" style="color: var(--display-text);">{{ w.label if w else key.capitalize() }}</div>
+              <div class="small" style="color: var(--display-text); opacity: 0.7;">
+                {% if w %}
+                  {{ w.summary }}{% if w.temp_f is not none %} • {{ '%.0f'|format(w.temp_f) }}°F{% endif %}
+                {% else %}--{% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div>
+        {% if settings and settings.notes_left_col %}
+          <div class="fw-semibold mb-1" style="color: var(--display-text);">Notes</div>
+          <div class="small" style="color: var(--display-text);">{{ settings.notes_left_col|safe }}</div>
+        {% else %}
+          <div class="fw-semibold mb-1" style="color: var(--display-text);">Notes</div>
+          <div class="small" style="color: var(--display-text); opacity: 0.7;">Add notes in settings.</div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-12 col-lg-9">
+      <div class="display-box p-3 border rounded">
+        {% if schedule and schedule.show_name %}
+          <h4 class="mb-3" style="color: var(--display-text);">{{ schedule.name }}</h4>
+        {% endif %}
+        {% if items %}
+          <div class="list-group">
+            {% for it in items %}
+              <div class="list-group-item display-box border-secondary">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    {% if it.name %}
+                      <div class="fw-bold fs-5 mb-1">{{ it.name }}</div>
+                    {% endif %}
+                    <div class="fw-semibold" style="color: var(--display-text); opacity: 0.8;">
+                      {{ it.start_time.strftime('%H:%M') }}
+                      {% if it.end_time %}- {{ it.end_time.strftime('%H:%M') }}{% endif %}
+                    </div>
+                  </div>
+                  {% if it.icon %}
+                    {% set custom_icon = icons.get(it.icon) if icons else None %}
+                    {% if custom_icon %}
+                      {# Custom icon - either image or text #}
+                      {% if custom_icon.image_path %}
+                        <div style="color: var(--display-text); opacity: 0.9;">
+                          <img src="{{ url_for('static', filename=custom_icon.image_path) }}" alt="{{ custom_icon.name }}" style="max-height: 1.5rem; max-width: 1.5rem; object-fit: contain;">
+                        </div>
+                      {% elif custom_icon.characters %}
+                        <div style="color: var(--display-text); opacity: 0.9; font-family: '{{ custom_icon.font }}', sans-serif; font-size: 1.5rem;">
+                          {{ custom_icon.characters }}
+                        </div>
+                      {% endif %}
+                    {% else %}
+                      {# Built-in Bootstrap icon #}
+                      {% set icon_map = {
+                        'info': 'bi-info-circle-fill',
+                        'star': 'bi-star-fill',
+                        'flag': 'bi-flag-fill',
+                        'calendar': 'bi-calendar-event-fill',
+                        'clock': 'bi-clock-fill',
+                        'bell': 'bi-bell-fill',
+                        'exclamation': 'bi-exclamation-triangle-fill',
+                        'check': 'bi-check-circle-fill',
+                        'heart': 'bi-heart-fill',
+                        'fire': 'bi-fire',
+                        'trophy': 'bi-trophy-fill',
+                        'lightning': 'bi-lightning-fill',
+                        'shield': 'bi-shield-fill'
+                      } %}
+                      <div style="color: var(--display-text); opacity: 0.9;">
+                        <i class="bi {{ icon_map.get(it.icon, 'bi-circle-fill') }}" style="font-size: 1.5rem;"></i>
+                      </div>
+                    {% endif %}
+                  {% endif %}
+                </div>
+                <div class="small" style="color: var(--display-text); opacity: 0.7;">
+                  {% if it.location %}<span class="me-2">📍 {{ it.location }}</span>{% endif %}
+                  {% if it.uniform %}<span class="me-2">🎽 {{ it.uniform }}</span>{% endif %}
+                  {% if it.lead %}<span class="me-2">👤 {{ it.lead }}</span>{% endif %}
+                  {% if it.notes %}<div class="mt-1">📝 {{ it.notes }}</div>{% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p style="color: var(--display-text); opacity: 0.7;">No items yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block scripts %}
+<script>
+  function updateClock() {
+    const now = new Date();
+    const time = now.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+    const date = now.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+    document.getElementById('clock-time').textContent = time;
+    document.getElementById('clock-date').textContent = date;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+</script>
+{% endblock %}
+
+

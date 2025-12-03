@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+  <h2>{{ title }}</h2>
+  <div>
+    <a href="{{ url_for('icons.list_icons') }}" class="btn btn-secondary btn-sm">Back</a>
+  </div>
+</div>
+<hr>
+<form method="post" enctype="multipart/form-data">
+  {{ form.hidden_tag() }}
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label">{{ form.name.label }}</label>
+      {{ form.name(class="form-control") }}
+      {% if form.name.errors %}
+        <div class="text-danger small">{{ form.name.errors[0] }}</div>
+      {% endif %}
+    </div>
+    <div class="col-md-6">
+      <div class="form-check mt-4">
+        {{ form.enabled(class="form-check-input") }}
+        <label class="form-check-label">{{ form.enabled.label }}</label>
+      </div>
+    </div>
+    <div class="col-md-12">
+      <div class="form-check">
+        {{ form.use_text(class="form-check-input", id="use_text") }}
+        <label class="form-check-label" for="use_text">{{ form.use_text.label }}</label>
+      </div>
+    </div>
+    <div class="col-md-6" id="image_section">
+      <label class="form-label">{{ form.image.label }}</label>
+      {{ form.image(class="form-control") }}
+      {% if icon and icon.image_path %}
+        <div class="mt-2">
+          <img src="{{ url_for('static', filename=icon.image_path) }}" alt="{{ icon.name }}" style="max-height: 100px;">
+        </div>
+      {% endif %}
+      {% if form.image.errors %}
+        <div class="text-danger small">{{ form.image.errors[0] }}</div>
+      {% endif %}
+    </div>
+    <div class="col-md-6" id="text_section" style="display: none;">
+      <label class="form-label">{{ form.characters.label }}</label>
+      {{ form.characters(class="form-control", placeholder="e.g., ⚠, ★, ✓") }}
+      {% if form.characters.errors %}
+        <div class="text-danger small">{{ form.characters.errors[0] }}</div>
+      {% endif %}
+    </div>
+    <div class="col-md-6" id="font_section" style="display: none;">
+      <label class="form-label">{{ form.font.label }}</label>
+      {{ form.font(class="form-select") }}
+      {% if form.font.errors %}
+        <div class="text-danger small">{{ form.font.errors[0] }}</div>
+      {% endif %}
+    </div>
+  </div>
+  <div class="mt-3">
+    {{ form.submit(class="btn btn-primary") }}
+  </div>
+</form>
+<script>
+  document.getElementById('use_text').addEventListener('change', function() {
+    const useText = this.checked;
+    document.getElementById('image_section').style.display = useText ? 'none' : 'block';
+    document.getElementById('text_section').style.display = useText ? 'block' : 'none';
+    document.getElementById('font_section').style.display = useText ? 'block' : 'none';
+  });
+  // Initialize on page load
+  if (document.getElementById('use_text').checked) {
+    document.getElementById('image_section').style.display = 'none';
+    document.getElementById('text_section').style.display = 'block';
+    document.getElementById('font_section').style.display = 'block';
+  }
+</script>
+{% endblock %}
+

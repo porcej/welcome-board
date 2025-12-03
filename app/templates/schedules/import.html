@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Import Schedule{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+  <h2>Import Schedule</h2>
+  <div>
+    <a href="{{ url_for('schedules.list_schedules') }}" class="btn btn-secondary btn-sm">Back</a>
+  </div>
+</div>
+<hr>
+<div class="alert alert-info">
+  <h5>Import Instructions</h5>
+  <p>Upload an Excel file (.xlsx) that was exported from this system, or use the following format:</p>
+  <ul>
+    <li>Row 1: Schedule Name</li>
+    <li>Row 2: Date (YYYY-MM-DD)</li>
+    <li>Row 3: Active (Yes/No)</li>
+    <li>Row 4: Show Name (Yes/No)</li>
+    <li>Row 5: Empty</li>
+    <li>Row 6: Headers (Name, Start Time, End Time, Duration (min), Location, Uniform, Lead, Notes, Icon)</li>
+    <li>Row 7+: Schedule items</li>
+  </ul>
+</div>
+<form method="post" enctype="multipart/form-data">
+  <div class="mb-3">
+    <label for="file" class="form-label">Excel File</label>
+    <input type="file" class="form-control" id="file" name="file" accept=".xlsx,.xls" required>
+    <small class="form-text text-muted">Select an Excel file (.xlsx or .xls) to import</small>
+  </div>
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-primary">Import</button>
+    <a href="{{ url_for('schedules.list_schedules') }}" class="btn btn-secondary">Cancel</a>
+  </div>
+</form>
+{% endblock %}
+
