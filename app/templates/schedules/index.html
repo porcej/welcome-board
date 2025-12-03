@@ -29,6 +29,10 @@
           <a href="{{ url_for('schedules.export_schedule', schedule_id=s.id) }}" class="btn btn-sm btn-info" title="Export to Excel">
             📥 Export
           </a>
+          <form method="post" action="{{ url_for('schedules.delete_schedule', schedule_id=s.id) }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-sm btn-danger" title="Delete Schedule" onclick="return confirm('Delete schedule &quot;{{ s.name }}&quot;?')">🗑️ Delete</button>
+          </form>
         </div>
       </div>
     </div>
