@@ -94,6 +94,30 @@ chown -R www-data:www-data /var/www/certbot
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
+# Check for existing configurations that might conflict
+print_info "Checking for existing nginx configurations..."
+EXISTING_SITES=$(ls /etc/nginx/sites-enabled/ 2>/dev/null | grep -v "digital-signage" || true)
+if [ -n "$EXISTING_SITES" ]; then
+    print_warn "Found existing nginx sites:"
+    echo "$EXISTING_SITES" | while read site; do
+        echo "  - $site"
+    done
+    print_warn "Multiple sites listening on port 443 may cause warnings"
+    print_warn "Consider using 'default_server' or separate IP addresses"
+fi
+
+# Check for broken certificate references
+print_info "Checking for broken certificate references..."
+BROKEN_CERTS=$(grep -r "ssl_certificate" /etc/nginx/sites-enabled/ 2>/dev/null | grep -v "^#" | sed 's/.*ssl_certificate[^;]*\/\([^/]*\)\/.*/\1/' | sort -u || true)
+if [ -n "$BROKEN_CERTS" ]; then
+    for cert_domain in $BROKEN_CERTS; do
+        if [ ! -f "/etc/letsencrypt/live/$cert_domain/fullchain.pem" ]; then
+            print_warn "Warning: Site references missing certificate: $cert_domain"
+            print_warn "  This may cause nginx test failures. Consider removing or fixing that site configuration."
+        fi
+    done
+fi
+
 # Generate nginx configuration
 print_info "Generating nginx configuration..."
 NGINX_CONF="/etc/nginx/sites-available/digital-signage"
@@ -114,10 +138,25 @@ fi
 
 # Test nginx configuration
 print_info "Testing nginx configuration..."
-if nginx -t; then
+NGINX_TEST_OUTPUT=$(nginx -t 2>&1)
+NGINX_TEST_EXIT=$?
+
+if [ $NGINX_TEST_EXIT -eq 0 ]; then
     print_info "Nginx configuration is valid"
+elif echo "$NGINX_TEST_OUTPUT" | grep -q "protocol options redefined"; then
+    print_warn "Nginx test shows warnings about protocol options redefined"
+    print_warn "This is usually harmless - multiple sites can listen on port 443"
+    print_warn "However, if there are errors (not just warnings), please fix them first"
+    if echo "$NGINX_TEST_OUTPUT" | grep -q "\\[emerg\\]"; then
+        print_error "Nginx configuration has ERRORS (not just warnings):"
+        echo "$NGINX_TEST_OUTPUT" | grep "\\[emerg\\]"
+        print_error "Please fix the errors above before continuing"
+        exit 1
+    fi
+    print_info "Only warnings detected, continuing..."
 else
-    print_error "Nginx configuration test failed"
+    print_error "Nginx configuration test failed:"
+    echo "$NGINX_TEST_OUTPUT"
     exit 1
 fi
 

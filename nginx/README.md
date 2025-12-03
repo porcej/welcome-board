@@ -95,6 +95,43 @@ The nginx configuration:
 
 ## Troubleshooting
 
+### Nginx Test Fails with Certificate Errors
+
+If you see errors like:
+```
+cannot load certificate "/etc/letsencrypt/live/domain.com/fullchain.pem": BIO_new_file() failed
+```
+
+This means a site configuration references a certificate that doesn't exist. To fix:
+
+1. **Identify broken references**:
+   ```bash
+   sudo ./nginx/fix-broken-certs.sh
+   ```
+
+2. **Fix the broken site**:
+   - Remove the site if no longer needed: `sudo rm /etc/nginx/sites-enabled/broken-site`
+   - Or comment out the server block in the site file
+   - Or obtain a new certificate: `sudo certbot --nginx -d domain.com`
+
+### Protocol Options Redefined Warnings
+
+If you see warnings like:
+```
+protocol options redefined for 0.0.0.0:443
+```
+
+This is usually harmless - multiple sites can listen on port 443. However, if you want to avoid the warning:
+
+1. **Use default_server** (only for one site):
+   ```nginx
+   listen 443 ssl http2 default_server;
+   ```
+
+2. **Use separate IP addresses** for each site
+
+3. **Use SNI** (Server Name Indication) - nginx handles this automatically
+
 ### Certificate Generation Fails
 
 1. **Check DNS**: Ensure your domain points to the server
