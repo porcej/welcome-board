@@ -14,7 +14,7 @@ services:
       - GUNICORN_TIMEOUT=${GUNICORN_TIMEOUT:-120}
       - GUNICORN_KEEPALIVE=${GUNICORN_KEEPALIVE:-2}
     ports:
-      - "8000:8000"
+      - "8005:8000"
     volumes:
       - ./:/app
       - uploads:/app/app/static/uploads
