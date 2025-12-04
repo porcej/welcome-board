@@ -67,13 +67,17 @@ To show weather information on your display:
 
 1. Enter your **Latitude** (e.g., 40.7128 for New York)
 2. Enter your **Longitude** (e.g., -74.0060 for New York)
-3. Enter your **Timezone** (e.g., America/New_York, Europe/London, UTC)
-   - Use standard timezone names from the [IANA Time Zone Database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
+3. Select your **Timezone** from the dropdown menu
+   - The dropdown includes common timezones organized by region (US, Canada, Europe, Asia, Australia, etc.)
+   - Examples: "US Eastern Time (New York)", "UK Time (London)", "UTC (Coordinated Universal Time)"
+   - If your timezone is not in the list, you can still manually enter a timezone name in the field
 4. Click **Save Settings**
 
 **Finding Your Coordinates**: 
 - Use Google Maps: Right-click on your location → Click the coordinates to copy them
 - Or use an online tool like [latlong.net](https://www.latlong.net/)
+
+**Tip**: The timezone dropdown makes it easy to select common timezones. Simply click the dropdown and scroll to find your region and city.
 
 ### Adding Left Column Notes
 
