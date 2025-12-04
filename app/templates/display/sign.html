@@ -248,6 +248,54 @@
   }
   updateClock();
   setInterval(updateClock, 1000);
+
+  // Track settings and schedule state for change detection
+  let lastSettingsTimestamp = {{ settings.updated_at.isoformat()|tojson if settings and settings.updated_at else 'null' }};
+  let lastScheduleId = {{ schedule.id if schedule else 'null' }};
+  let lastScheduleTimestamp = {{ schedule.updated_at.isoformat()|tojson if schedule and schedule.updated_at else 'null' }};
+
+  // Poll for settings and schedule changes every 5 seconds
+  function checkForUpdates() {
+    fetch('{{ url_for("display.check_updates") }}')
+      .then(response => response.json())
+      .then(data => {
+        // Check if settings were updated
+        if (data.settings_updated_at && lastSettingsTimestamp) {
+          if (data.settings_updated_at !== lastSettingsTimestamp) {
+            console.log('Settings changed, refreshing...');
+            window.location.reload();
+            return;
+          }
+        }
+
+        // Check if active schedule changed
+        const currentScheduleId = data.schedule_id || null;
+        if (currentScheduleId !== lastScheduleId) {
+          console.log('Active schedule changed, refreshing...');
+          window.location.reload();
+          return;
+        }
+
+        // Check if schedule was updated
+        if (data.schedule_updated_at && lastScheduleTimestamp) {
+          if (data.schedule_updated_at !== lastScheduleTimestamp) {
+            console.log('Schedule updated, refreshing...');
+            window.location.reload();
+            return;
+          }
+        }
+      })
+      .catch(error => {
+        console.error('Error checking for updates:', error);
+        // Continue polling even if there's an error
+      });
+  }
+
+  // Start polling after page load
+  setTimeout(() => {
+    checkForUpdates();
+    setInterval(checkForUpdates, 5000); // Check every 5 seconds
+  }, 2000); // Wait 2 seconds before starting to avoid immediate refresh on load
 </script>
 {% endblock %}
 
