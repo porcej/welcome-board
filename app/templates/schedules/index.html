@@ -17,7 +17,7 @@
         <a href="{{ url_for('schedules.edit_schedule', schedule_id=s.id) }}" class="text-light text-decoration-none flex-grow-1">
           <div class="d-flex justify-content-between">
             <span class="fw-semibold">{{ s.name }}</span>
-            <span class="text-secondary">{{ s.date.strftime('%Y-%m-%d') }}</span>
+            <span class="text-secondary">{% if s.date %}{{ s.date.strftime('%Y-%m-%d') }}{% else %}No date (always active when active){% endif %}</span>
           </div>
           {% if s.is_active %}<div class="badge bg-primary mt-2">Active</div>{% endif %}
         </a>

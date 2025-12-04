@@ -19,8 +19,9 @@
       {{ form.name(class="form-control") }}
     </div>
     <div class="col-md-3">
-      <label class="form-label">{{ form.date.label }}</label>
+      <label class="form-label">{{ form.date.label }} <small class="text-muted">(optional)</small></label>
       {{ form.date(class="form-control") }}
+      <small class="form-text text-muted">If provided, schedule will only be active on this specific date</small>
     </div>
     <div class="col-md-3 d-flex align-items-end">
       <div class="form-check">

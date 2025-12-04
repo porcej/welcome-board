@@ -33,7 +33,7 @@ class Schedule(TimestampMixin, db.Model):
     __tablename__ = "schedules"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
-    date = db.Column(db.Date, nullable=False, index=True)
+    date = db.Column(db.Date, nullable=True, index=True)  # Optional: if provided, schedule is only active on that date
     is_active = db.Column(db.Boolean, default=False, nullable=False)
     show_name = db.Column(db.Boolean, default=True, nullable=False)  # Whether to display name on sign
     created_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)

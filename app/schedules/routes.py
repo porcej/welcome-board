@@ -11,12 +11,13 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font, PatternFill, Alignment
 from datetime import datetime, time
 from io import BytesIO
+from sqlalchemy import desc, nullslast
 
 
 @schedules_bp.route("/")
 @login_required
 def list_schedules():
-    schedules = Schedule.query.order_by(Schedule.date.desc()).all()
+    schedules = Schedule.query.order_by(nullslast(desc(Schedule.date))).all()
     return render_template("schedules/index.html", schedules=schedules)
 
 
@@ -225,7 +226,7 @@ def export_schedule(schedule_id: int):
     # Header row
     headers = ["Name", "Start Time", "End Time", "Duration (min)", "Location", "Uniform", "Lead", "Notes", "Icon"]
     ws.append(["Schedule Name:", schedule.name])
-    ws.append(["Date:", schedule.date.strftime("%Y-%m-%d")])
+    ws.append(["Date:", schedule.date.strftime("%Y-%m-%d") if schedule.date else "Not specified"])
     ws.append(["Active:", "Yes" if schedule.is_active else "No"])
     ws.append(["Show Name:", "Yes" if schedule.show_name else "No"])
     ws.append([])  # Empty row
@@ -272,7 +273,8 @@ def export_schedule(schedule_id: int):
     wb.save(output)
     output.seek(0)
     
-    filename = f"schedule_{schedule.name.replace(' ', '_')}_{schedule.date.strftime('%Y%m%d')}.xlsx"
+    date_str = schedule.date.strftime('%Y%m%d') if schedule.date else 'no_date'
+    filename = f"schedule_{schedule.name.replace(' ', '_')}_{date_str}.xlsx"
     return send_file(
         output,
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -308,16 +310,18 @@ def import_schedule():
             is_active = str(ws.cell(row=3, column=2).value).lower() == "yes"
             show_name = str(ws.cell(row=4, column=2).value).lower() == "yes"
             
-            # Parse date
-            if isinstance(date_str, datetime):
-                schedule_date = date_str.date()
-            elif isinstance(date_str, str):
-                try:
-                    schedule_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-                except:
-                    schedule_date = datetime.now().date()
-            else:
-                schedule_date = datetime.now().date()
+            # Parse date (optional)
+            schedule_date = None
+            if date_str:
+                if isinstance(date_str, datetime):
+                    schedule_date = date_str.date()
+                elif isinstance(date_str, str):
+                    # Check for "Not specified" or empty string
+                    if date_str.lower() not in ("not specified", "", "none", "null"):
+                        try:
+                            schedule_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+                        except:
+                            schedule_date = None
             
             # Create schedule
             if is_active:

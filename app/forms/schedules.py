@@ -36,7 +36,7 @@ def get_icon_choices():
 
 class ScheduleForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
-    date = DateField("Date", validators=[DataRequired()], format="%Y-%m-%d")
+    date = DateField("Date", validators=[Optional()], format="%Y-%m-%d")
     is_active = BooleanField("Active")
     show_name = BooleanField("Show Name on Display")
     submit = SubmitField("Save")

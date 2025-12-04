@@ -2,12 +2,25 @@ from flask import render_template, jsonify
 from . import display_bp
 from ..models import Schedule, ScheduleItem, SiteSettings, Icon
 from ..services.weather import get_weather
+from datetime import date
+from sqlalchemy import desc, nullslast, or_, and_
 
 
 @display_bp.route("/")
 def sign():
     settings = SiteSettings.query.first()
-    active = Schedule.query.filter_by(is_active=True).order_by(Schedule.date.desc()).first()
+    today = date.today()
+    
+    # Find active schedule: 
+    # - If date is provided and matches today, schedule is active (regardless of is_active flag)
+    # - If date is not provided, schedule is active based on is_active flag
+    active = Schedule.query.filter(
+        or_(
+            Schedule.date == today,
+            and_(Schedule.date == None, Schedule.is_active == True)
+        )
+    ).order_by(nullslast(desc(Schedule.date))).first()
+    
     items = []
     if active:
         items = ScheduleItem.query.filter_by(schedule_id=active.id).order_by(ScheduleItem.start_time).all()
@@ -21,7 +34,17 @@ def sign():
 def check_updates():
     """Lightweight endpoint to check if settings or schedule have been updated"""
     settings = SiteSettings.query.first()
-    active = Schedule.query.filter_by(is_active=True).order_by(Schedule.date.desc()).first()
+    today = date.today()
+    
+    # Find active schedule: 
+    # - If date is provided and matches today, schedule is active (regardless of is_active flag)
+    # - If date is not provided, schedule is active based on is_active flag
+    active = Schedule.query.filter(
+        or_(
+            Schedule.date == today,
+            and_(Schedule.date == None, Schedule.is_active == True)
+        )
+    ).order_by(nullslast(desc(Schedule.date))).first()
     
     # Get timestamps for change detection
     settings_timestamp = settings.updated_at.isoformat() if settings and settings.updated_at else None
